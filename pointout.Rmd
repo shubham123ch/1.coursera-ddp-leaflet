@@ -1,0 +1,63 @@
+
+
+---
+title: "pointout Hospital, Bus Stop, Railway Station,Restaurant "
+author: "Shubham"
+date: "19th oct 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, 
+                      warning = FALSE)
+```
+
+# Coursera Developing Data Products Week 2 Peer-graded Assignment: Leaflet
+## Introduction
+
+This project was created as part of the Developing Data Products course of the Coursera [Data Science Specialisation](https://www.coursera.org/specializations/jhu-data-science). The goal of the project is to create a web page using R Markdown that features a map created with Leaflet, and to host the resulting web page on either GitHub Pages, RPubs, or NeoCities.
+
+oct 2020.
+```{r eval=false}
+set.seed(2020-10-20)
+
+
+
+```
+```{r}
+#Loading the required libraries.
+library(leaflet)
+library(dplyr)
+
+place <- data.frame(name = "Hospital", "Bus Stop", "Railway Station", "Restaurant", lat = c(28.653229,27.703577,30.102), lng = c(77.308601,85.313711,18.354))
+
+
+icon1 <- makeIcon(
+  iconUrl = "https://cdn4.iconfinder.com/data/icons/health-care-44/32/15_Hospital_building_emergency_health_medical-512.png",
+  iconWidth = 25, iconHeight = 31
+)
+icon2 <- makeIcon(
+  iconUrl = "https://tse2.mm.bing.net/th?id=OIP.BIG-4u1M0VWkxh7qbpIt0QHaLb&pid=Api&P=0&w=300&h=300",
+  iconWidth = 25, iconHeight = 31
+)
+icon3 <- makeIcon(
+  iconUrl = "https://www.thekitesurfcentre.com/wp-content/uploads/2009/04/Train-Icon.jpg",
+  iconWidth = 25, iconHeight = 31
+)
+icon4 <- makeIcon(
+  iconUrl = "https://cdn3.vectorstock.com/i/1000x1000/12/02/restaurant-menu-icon-vector-4731202.jpg",
+  iconWidth = 25, iconHeight = 31
+)
+
+iList <- iconList(icon1,icon2,icon3,icon4)
+
+sites <- c(
+  "<a href = 'https://en.wikipedia.org/wiki/East_Delhi'>Hospital</a>", 
+  "<a href = 'https://en.wikipedia.org/wiki/Delhi%E2%80%93Kathmandu_Bus'>Bus Stop</a>",
+  "<a href = 'https://en.wikipedia.org/wiki/New_Delhi_railway_station'>Railway Station</a>",
+  "<a href = 'https://r.search.yahoo.com/_ylt=AwrPiBXHRY1fzUkAii27HAx.;_ylu=Y29sbwNzZzMEcG9zAzEwBHZ0aWQDBHNlYwNzcg--/RV=2/RE=1603122759/RO=10/RU=https%3a%2f%2fwww.tripadvisor.in%2fRestaurants-g304551-New_Delhi_National_Capital_Territory_of_Delhi.html/RK=2/RS=etUsbioTQtQvMMY3kPH80OskZn4-'>Restaurant</a>")
+
+map <- place %>% leaflet() %>% addTiles() %>% addMarkers(icon = iList, popup = sites, clusterOptions = markerClusterOptions()) 
+map
+
+```
