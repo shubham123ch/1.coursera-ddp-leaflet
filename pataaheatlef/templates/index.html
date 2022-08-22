@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>
+  Heatmap with Leaflet
+ </title>
+ <!-- link to leaflet css --> 
+ <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+ <!-- map is full width and height of device -->
+ <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
+ <style>
+  body{
+   padding: 0;
+   margin: 0;
+  }
+  html, body, #map {
+   height: 100%;
+  }
+ </style>
+</head>
+<body>
+ <!-- leaflet js -->
+ <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+ 
+ <script src="{{ url_for('static', filename='js/leaflet-heat.js') }}"/></script>
+ <script src="{{ url_for('static', filename='js/leaflet.ajax.min.js') }}"/></script>
+ <script src="{{ url_for('static', filename='js/heat_points.js') }}" /></script>
+ 
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+  integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+  crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+  integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+  crossorigin=""></script>
+ 
+ <!--
+ < script src="leaflet-heat.js"></ script>
+< script src="leaflet.ajax.min.js"></ script>
+< script src="heat_points.js"></ script>
+ -->
+ <div id="map">
+ </div>
+ <script>
+  var map = L.map('map',{center: [22.719568, 75.857727], zoom: 10});
+ 
+  // OSM Baselayer
+  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+  var kildareStyle = {
+ "fillColor": "#CC9933", 
+ "color": "#000000",
+ "weight": 2, 
+ "fillOpacity": 0.2
+  }
+//  var pointStyle = {
+//  "radius": 2,
+//  "fillColor": "#000000",
+//  "color": "#000000",
+//  "weight": 1,
+//  "fillOpacity": 1
+ 
+
+//  };
+
+//  var kildare = new L.GeoJSON.AJAX('api_datapatacod.geojson', {style:kildareStyle}).addTo(map);
+//  var heat = L.heatLayer(heat_points, {radius:12,blur:25,maxZoom:11}).addTo(map);
+//  var points = new L.GeoJSON.AJAX('points.geojson', {pointToLayer: function (feature, latlng) {
+//    return L.circleMarker(latlng, pointStyle);
+//  }}).addTo(map);
+ 
+ </script>
+ 
+</body>
+</html>
+
+
+
+
