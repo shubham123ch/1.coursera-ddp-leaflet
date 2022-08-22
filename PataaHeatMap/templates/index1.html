@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Pataa Heatmap</title>
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="{{url_for('static', filename='wms-capabilities.min.js')}}"></script>
+	<script src="{{url_for('static', filename='L.Geoserver.js')}}"></script>
+	<style>
+		#main {
+			width: 100%;
+			overflow: auo;
+		}
+
+		#div_state {
+			float: left;
+			width: 23%;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div>
+
+		<div id="main">
+
+			<div id="div_state">
+				<label for="state">Choose a State:</label>
+				<select name="state_name" id="state_id">
+					<option value="Choose State"> </option>
+					<option value="Andaman & Nicobar Island">Andaman & Nicobar Island</option>
+					<option value="Andhra Pradesh">Andhra Pradesh</option>
+					<option value="Arunanchal Pradesh">Arunachal Pradesh</option>
+					<option value="Assam">Assam</option>
+					<option value="Bihar">Bihar</option>
+					<option value="Chandigarh">Chandigarh</option>
+					<option value="Chhattisgarh">Chhattisgarh</option>
+					<option value="Dadara & Nagar Havelli">Dadra & Nagar Haveli</option>
+					<option value="Daman & Diu">Daman & Diu</option>
+					<option value="NCT of Delhi">Delhi</option>
+					<option value="Goa">Goa</option>
+					<option value="Gujarat">Gujarat</option>
+					<option value="Haryana">Haryana</option>
+					<option value="Himachal Pradesh">Himachal Pradesh</option>
+					<option value="Jammu & Kashmir">Jammu & Kashmir</option>
+					<option value="Jharkhand">Jharkhand</option>
+					<option value="Karnataka">Karnataka</option>
+					<option value="Kerala">Kerala</option>
+					<option value="Madhya Pradesh">Madhya Pradesh</option>
+					<option value="Maharashtra">Maharashtra</option>
+					<option value="Manipur">Manipur</option>
+					<option value="Meghalaya">Meghalaya</option>
+					<option value="Mizoram">Mizoram</option>
+					<option value="Nagaland">Nagaland</option>
+					<option value="Odisha">Odisha</option>
+					<option value="Puducherry">Puducherry</option>
+					<option value="Punjab">Punjab</option>
+					<option value="Rajasthan">Rajasthan</option>
+					<option value="Sikkim">Sikkim</option>
+					<option value="Tamil Nadu">Tamil Nadu</option>
+					<option value="Telangana">Telangana</option>
+					<option value="Tripura">Tripura</option>
+					<option value="Uttar Pradesh">Uttar Pradesh</option>
+					<option value="Uttarakhand">Uttarakhand</option>
+					<option value="West Bengal">West Bengal</option>
+				</select>
+			</div>
+
+		</div>
+
+
+
+		<div id="map" style="width: 1350px; height: 630px"></div>
+
+		<script>
+
+
+			// Adding base layer to the map
+			var satellite_view = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] });
+
+			// Creating map options
+			var mapOptions = {
+				center: [28.61, 77.23], zoom: 5, maxZoom: 22, maxNativeZoom: 20, layers: [satellite_view]
+			}
+			// Creating a map object
+			var map = new L.map('map', mapOptions);
+			map.doubleClickZoom.disable();
+			satellite_view.addTo(map)
+
+
+            /* <!-- Creating a tile layer for the state boundary and locality boundary. --> */
+		    url =  'http://localhost:8080/geoserver/postgis_workspace/wms'  //  ## Change with our production url
+			var state = L.tileLayer.wms(url, {
+				layers: "postgis_workspace:state_boundary", format: 'image/png',
+				transparent: true, tiled: true,
+			});
+			state.addTo(map);
+			var locality = L.tileLayer.wms(url, {
+				layers: "postgis_workspace:Locality_indore", format: 'image/png',
+				transparent: true, tiled: true,
+			});
+
+			
+
+			/* <!-- Creating a layer of points. --> */
+			var points = L.tileLayer.wms(url, {
+				layers: "postgis_workspace:gis_indore", format: 'image/png',transparent: true, tiled: true,
+			});
+
+			/* <!-- Creating a function called handleJson. This function takes a parameter called data. The function
+			then creates a variable called requiredArea and sets it equal to the data that is passed in. The
+			function then fits the map to the bounds of the requiredArea. --> */
+			function handleJson(data) {
+					var requiredArea = L.geoJson(data)
+					map.fitBounds(requiredArea.getBounds())
+			}
+
+
+		    /* <!-- Function for Removing all the layers except the base layer. --> */
+			function removing_layer() {
+				var osmUrl = 'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'
+				var osmUrl1 = 'http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
+				map.eachLayer(function (layer) {
+					if (osmUrl != layer._url) {
+						if (osmUrl1 != layer._url) {
+							map.removeLayer(layer)
+						}
+					};
+				})
+			}
+
+
+            /* 
+			<!-- The above code is creating a dropdown menu for the state and district. -->
+			*/
+			document.getElementById('state_id').addEventListener('change', function (e) {
+
+				if (document.getElementById("dis") !== null) {
+					document.getElementById("dis").style.display = "none"
+				}
+
+				v = document.getElementById('state_id').value
+			    /* <!-- The  code is creating a dropdown menu for the districts of Madhya Pradesh. --> */
+				if (v == 'Madhya Pradesh') {
+					var values = ["Choose District", "Alirajpur", "Anuppur", "Ashoknagar", "Balaghat", "Barwani", "Betul", "Bhind", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", "Damoh", "Datia", "Dewas", "Dhar", "Dindori", "Guna", "Gwalior", "Harda", "Hoshangabad", "Indore", "Jabalpur", "Jhabua", "Katni", "Khandwa", "Khargone", "Mandla", "Mandsaur", "Morena", "Narsinghpur", "Neemuch", "Panna", "Raisen", "Rajgarh", "Ratlam", "Rewa", "Sagar", "Satna", "Sehore", "Seoni", "Shahdol", "Shajapur"
+						, "Sheopur", "Shivpuri", "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha"];
+
+					var select = document.createElement("select");
+					select.id = "dis"
+					for (const val of values) {
+						var option = document.createElement("option");
+						option.value = val;
+						option.text = val.charAt(0).toUpperCase() + val.slice(1);
+						select.appendChild(option);
+					}
+					var label = document.createElement("label");
+					label.htmlFor = "District";
+					document.getElementById("main").appendChild(label).appendChild(select);
+
+
+
+				    /*	<!-- A function which is called when the value of the dropdown is changed. --> */
+					document.getElementById('dis').addEventListener('change', function (e) {
+						v = document.getElementById('dis').value
+						removing_layer()
+
+						$.ajax('http://localhost:8080/geoserver/postgis_workspace/wfs',{
+							async: false,
+							type: 'GET',
+							data: {
+								service: 'WFS',version: '1.1.0',request: 'GetFeature', typename: 'postgis_workspace:Mp_City_boundary',
+								CQL_FILTER: "dist_nm=" + "'" + v + "'",srsname: 'EPSG:4326',outputFormat: 'text/javascript',
+							},
+							dataType: 'jsonp',jsonpCallback:'callback:handleJson', jsonp:'format_options'
+						});
+
+						var lay = "postgis_workspace:Mp_City_boundary"
+						var sin = L.tileLayer.wms(url, { layers: lay, format: 'image/png', transparent: true, tiled: true, fillopacity: 0.1, CQL_FILTER: "dist_nm=" + "'" + v + "'" });
+						sin.addTo(map)
+						sin.bringToFront();
+					})
+				}
+
+				
+				removing_layer()
+				/* <!-- Getting the bounding box of the layer and then fitting the map to that bounding box. --> */
+				var lay = "postgis_workspace:ST_NM_" + v
+				var half_lay = "ST_NM_" + v
+				var wms_url = "http://localhost:8080/geoserver/postgis_workspace/wms?service=wms &version=1.1.1 &request=GetCapabilities"
+				axios.get(wms_url).then(res => {
+					var json = new WMSCapabilities(res.data).toJSON()
+					const layers = json.Capability.Layer.Layer;
+					const layer = layers.filter(l => l.Name === half_lay)[0];
+					var bbox = layer.LatLonBoundingBox;
+					console.log(bbox)
+					map.fitBounds([
+						[bbox[1], bbox[0]],
+						[bbox[3], bbox[2]]
+					])
+				})
+				var one_district = L.tileLayer.wms(url, {  
+					layers: lay, format: 'image/png', transparent: true, tiled: true, fillopacity: 0.1
+				});
+				one_district.addTo(map)
+				one_district.bringToFront();
+
+			})
+
+
+            /*
+	        <!-- The  code is adding the layers to the map and removing the layers from the map based on zoom level-->
+			*/
+			var get_data
+			map.on('zoomend', function () {
+				if (map.getZoom() >= 2 && map.getZoom() <= 4) {
+					removing_layer()
+					state.addTo(map);
+					state.bringToFront()
+				}
+				if(map.getZoom < 14){
+					removing_layer()
+				}
+				if (map.getZoom() > 14) {
+					removing_layer()
+					locality.addTo(map);
+					locality.bringToFront();
+				}
+				if (map.getZoom() > 18) {
+					points.addTo(map);
+					locality.bringToFront();
+				}
+			});
+
+
+            /*
+			<!-- Getting the layer name and then based on the layer name it is getting the property name. -->
+            */
+
+			map.on("click", function (e) {
+				size = map.getSize()
+				bound = map.getBounds().toBBoxString()
+
+				map.eachLayer(function (l) {
+					o = l.wmsParams
+					if (o !== undefined) {
+						la = o.layers
+
+						if (la === 'postgis_workspace:state_boundary') {
+							pn = 'ST_NM'
+							define(la, pn, size, bound, e)
+						}
+						else if (la === 'postgis_workspace:Mp_City_boundary') {
+							pn = "state_nm,dist_nm,ulb_nm_e_r"
+							define(la, pn, size, bound, e)
+						}
+						else if (la === 'postgis_workspace:Locality_indore') {
+							pn = "indore_loc,the_geom"
+							define(la, pn, size, bound, e)
+						}
+						else {
+
+							function confirmEnding(string, target) {
+								return (string.substr(0, target.length) === target) ? true : false;
+							}
+
+							bool = confirmEnding(la, 'postgis_workspace:ST_NM_');
+							if (bool) {
+								pn = "ST_NM,DISTRICT"
+								define(la, pn, size, bound, e)
+							}
+						}
+
+					}
+				})
+
+			})
+
+    
+			/* 
+			<-- A function that is called when a user clicks on the map. It is used to get the data from the
+			server and display it on the map. --> 
+			*/
+
+			function define(get_data, pn, size, bound, e) {
+				$.ajax(url, {
+					type: 'GET',
+					data: {
+						service: 'WMS', version: '1.1.0', request: 'GetFeatureInfo', LAYERS: get_data,
+						QUERY_LAYERS: get_data, HEIGHT: size.y, Width: size.x,
+						BBOX: bound, INFO_FORMAT: 'application/json',
+						x: e.containerPoint.x, y: e.containerPoint.y, FORMAT: 'image/png', propertyname: pn
+						// CQL_FILTER: "ulb_nm_e='Betma'",//   outputFormat: 'text/javascript',
+					},
+					success: function (data, status, xhr) {
+						showResults(e.latlng, data);
+					},
+					error: function (jqXhr, textStatus, errorMessage) { }
+				});
+
+
+				var showResults = function (latlng, content) {
+					var on_layer
+					map.eachLayer(function (layer) {
+						if (layer.options.layers !== undefined) {
+							on_layer = layer.options.layers
+						}
+					});
+
+					if (on_layer === 'postgis_workspace:Mp_City_boundary') {
+						var request = new XMLHttpRequest();
+						request.open('POST', '/city', false);
+						request.setRequestHeader('Content-Type', 'application/json')
+					}
+
+					else {
+						var request = new XMLHttpRequest();
+						request.open('POST', '/state', false);
+						request.setRequestHeader('Content-Type', 'application/json')
+					}
+
+
+					props = content.features[0].properties
+
+					if (props !== undefined) {
+
+						if (props.hasOwnProperty('indore_loc') === true) {
+							loc = content.features[0].properties.indore_loc
+
+
+							var locality_specific = L.tileLayer.wms(url, {
+								layers: "postgis_workspace:Locality_indore", format: 'image/png',
+								transparent: true, tiled: true,
+								CQL_FILTER: "indore_loc=" + "'" + loc + "'"
+							});
+							removing_layer()
+
+							locality_specific.addTo(map)
+							locality_specific.bringToFront()
+
+
+							var points = L.tileLayer.wms(url, {
+								layers: "postgis_workspace:gis_indore", format: 'image/png',
+								transparent: true, tiled: true,
+								CQL_FILTER: "indore_loc=" + "'" + loc + "'"
+							});
+							points.addTo(map)
+							points.bringToFront()
+
+
+							$.ajax(url, {
+								type: 'GET',
+								data: {
+									service: 'WFS', version: '1.1.0', request: 'GetFeature', typeName: "postgis_workspace:gis_indore",
+									outputFormat: 'application/json',
+									CQL_FILTER: "indore_loc=" + "'" + loc + "'"
+								},
+								success: function (data, status, xhr) {
+									show1(data);
+								},
+								error: function (jqXhr, textStatus, errorMessage) { }
+							});
+
+							count_pataa = 0
+							var show1 = function (data) {
+								if (data.totalFeatures !== 0) {
+									count_pataa = data.totalFeatures
+								}
+								L.popup({ maxWidth: 800 }).setLatLng(e.latlng).setContent(" Locality : " + loc + "<br>" + " Pataa : " + count_pataa).openOn(map);
+							}
+
+
+						}
+
+						else if (on_layer === 'postgis_workspace:Mp_City_boundary' && props.hasOwnProperty('ulb_nm_e_r') === true) {
+							let json = JSON.stringify({ 'state_name': props.state_nm, 'city': props.ulb_nm_e_r });
+							request.send(json)
+							var pataa
+							if (request.status === 200) {
+								pataa = request.responseText
+								console.log(request.responseText);
+							} else if (err) { console.log(err); return; } // do nothing if there's an error
+
+							c = content.features[0].properties.ulb_nm_e_r
+							L.popup({ maxWidth: 800 }).setLatLng(e.latlng).setContent(" City : " + c + "<br></br>" + "Pataa : " + pataa).openOn(map);
+						}
+
+
+						else if (props.hasOwnProperty('DISTRICT') === true) {
+
+							if ("Madhya Pradesh" === props.ST_NM) {
+								var request = new XMLHttpRequest();
+								request.open('POST', '/dis', false);
+								request.setRequestHeader('Content-Type', 'application/json')
+								let json = JSON.stringify({ 'state_name': props.ST_NM, 'district': props.DISTRICT });
+
+								request.send(json)
+								var pataa
+								if (request.status === 200) {
+									pataa = request.responseText
+									console.log(request.responseText);
+								} else if (err) { console.log(err); return; } // do nothing if there's an error
+							}
+							s = content.features[0].properties.ST_NM
+							d = content.features[0].properties.DISTRICT
+							L.popup({ maxWidth: 800 }).setLatLng(e.latlng).setContent("State : " + s + "<br></br>" + " Dis : " + d + "<br></br>" + "Pataa : " + pataa).openOn(map);
+
+						}
+
+						else if (props.hasOwnProperty('ST_NM') === true && on_layer === 'postgis_workspace:state_boundary') {
+							let json = JSON.stringify({ 'state_name': props.ST_NM });
+
+							request.send(json)
+
+							var pataa
+							if (request.status === 200) {
+								pataa = request.responseText
+								console.log(request.responseText);
+							} else if (err) { console.log(err); return; } // do nothing if there's an error
+
+							s = content.features[0].properties.ST_NM
+							L.popup({ maxWidth: 800 }).setLatLng(e.latlng).setContent('<b>' + "State : " + s + "<br></br>" + " Pataa " + pataa + '</b>').openOn(map);
+
+						}
+
+					}
+				}
+
+			}
+
+
+
+
+		</script>
+</body>
+
+</html>
