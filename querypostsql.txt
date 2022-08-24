@@ -1,0 +1,62 @@
+
+Select p.id, p.latitude, p.longitude, p.geom, l.loc
+from pataa_mp as p 
+join indore_locality_fg as l
+on ST_Within(p.geom,l.geom);
+
+SELECT job_id,COUNT(*) AS "Number of pataa" 
+FROM employees 
+GROUP BY job_id;
+
+SELECT id, attribute, COUNT(attribute) FROM mytable GROUP BY attribute
+
+SELECT count(ST_NPoints(geom) FROM lines;
+
+ create pataa_count AS SELECT latitude,longitude,geom,loc, COUNT(geom) FROM number_pataa GROUP BY loc,geom,latitude,longitude;
+
+create pataa_count AS SELECT latitude,longitude,geom,loc, count(ST_NPoints(geom)) FROM number_pataa GROUP BY loc,geom,latitude,longitude;
+
+--create pataa_count AS 
+SELECT latitude,longitude,geom,loc, count(ST_NPoints(geom)) FROM number_pataa GROUP BY loc,geom,latitude,longitude;
+--------
+select count(ST_NPoints(geom)) FROM number_pataa GROUP BY loc;
+------
+UPDATE number_pataa set count_pataa = (select count(ST_NPoints(geom)) FROM number_pataa);
+
+SELECT gid, field1, field2, SUM(ST_NumInteriorRings(geom)) AS numholes
+FROM (SELECT gid, field1, field2, (ST_Dump(geom)).geom As geom
+	FROM sometable) As foo
+GROUP BY gid, field1,field2;
+--------------
+with counted as (
+   select name, count(*) as name_count
+   from the_table
+   group by name
+) 
+update the_table
+  set "count" = c.name_count
+from counted c
+where c.name = the_table.name;
+
+-------------
+with counted as (
+   select gid,latitude,longitude,geom,loc, count(ST_NPoints(geom)) as count_pataa
+   FROM number_pataa
+   group by geom,latitude,longitude,loc,gid
+) 
+update number_pataa
+set "count" = c.count_pataa
+from counted c
+where c.geom = number_pataa.geom;
+
+-------------
+
+with counted as (
+   select loc, count(ST_NPoints(geom)) as count_pataa
+   FROM number_pataa
+   group by loc
+) 
+update number_pataa
+set "count" = c.count_pataa
+from counted c
+where c.loc = number_pataa.loc;
