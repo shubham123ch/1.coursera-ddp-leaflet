@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+
+
+<head>
+    <link rel="stylesheet" href="libs/v6.5.0/css/ol.css" type="text/css">
+    <link rel="stylesheet" href="libs/v6.5.0/examples/resources/layout.css" type="text/css">
+    <link rel="stylesheet" href="libs/ol-layerswitcher/dist/ol-layerswitcher.css" />
+
+
+    <script src="libs/v6.5.0/build/ol.js"></script>
+    <script src="libs/ol-layerswitcher/dist/ol-layerswitcher.js"></script>
+
+    <header>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+          <div class="container-fluid">
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-mdb-toggle="collapse"
+              data-mdb-target="#navbarExample01"
+              aria-controls="navbarExample01"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarExample01">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item active">
+                    <div id="div_state">
+                        <label for="state">Choose a State:</label>
+                        <select name="state_name" id="state_id">
+                            <option value="Choose State"> </option>
+                            <option value="Andaman & Nicobar Island">Andaman & Nicobar Island</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunanchal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chandigarh">Chandigarh</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Dadara & Nagar Havelli">Dadra & Nagar Haveli</option>
+                            <option value="Daman & Diu">Daman & Diu</option>
+                            <option value="NCT of Delhi">Delhi</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Puducherry">Puducherry</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                        </select>
+                    </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <!-- Navbar -->
+      
+        <!-- Jumbotron -->
+        <div class="p-5 text-center bg-light">
+          <h1 class="mb-3">Heading</h1>
+          <h4 class="mb-3">Subheading</h4>
+          <a class="btn btn-primary" href="" role="button">Call to action</a>
+        </div>
+        <!-- Jumbotron -->
+
+        <script>
+        /* 
+        <!-- The above code is creating a dropdown menu for the state and district. -->
+        */
+        document.getElementById('state_id').addEventListener('change', function (e) {
+
+            if (document.getElementById("dis") !== null) {
+                document.getElementById("dis").style.display = "none"
+            }
+
+            v = document.getElementById('state_id').value
+            /* <!-- The  code is creating a dropdown menu for the districts of Madhya Pradesh. --> */
+            if (v == 'Madhya Pradesh') {
+                var values = ["Choose District", "Alirajpur", "Anuppur", "Ashoknagar", "Balaghat", "Barwani", "Betul", "Bhind", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", "Damoh", "Datia", "Dewas", "Dhar", "Dindori", "Guna", "Gwalior", "Harda", "Hoshangabad", "Indore", "Jabalpur", "Jhabua", "Katni", "Khandwa", "Khargone", "Mandla", "Mandsaur", "Morena", "Narsinghpur", "Neemuch", "Panna", "Raisen", "Rajgarh", "Ratlam", "Rewa", "Sagar", "Satna", "Sehore", "Seoni", "Shahdol", "Shajapur"
+                    , "Sheopur", "Shivpuri", "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha"];
+
+                var select = document.createElement("select");
+                select.id = "dis"
+                for (const val of values) {
+                    var option = document.createElement("option");
+                    option.value = val;
+                    option.text = val.charAt(0).toUpperCase() + val.slice(1);
+                    select.appendChild(option);
+                }
+                var label = document.createElement("label");
+                label.htmlFor = "District";
+                document.getElementById("main").appendChild(label).appendChild(select);
+
+
+
+                /*	<!-- A function which is called when the value of the dropdown is changed. --> */
+                document.getElementById('dis').addEventListener('change', function (e) {
+                    v = document.getElementById('dis').value
+                    removing_layer()
+
+                    $.ajax('http://localhost:8080/geoserver/postgis_workspace/wfs',{
+                        async: false,
+                        type: 'GET',
+                        data: {
+                            service: 'WFS',version: '1.1.0',request: 'GetFeature', typename: 'postgis_workspace:Mp_City_boundary',
+                            CQL_FILTER: "dist_nm=" + "'" + v + "'",srsname: 'EPSG:4326',outputFormat: 'text/javascript',
+                        },
+                        dataType: 'jsonp',jsonpCallback:'callback:handleJson', jsonp:'format_options'
+                    });
+
+                    var lay = "postgis_workspace:Mp_City_boundary"
+                    var sin = L.tileLayer.wms(url, { layers: lay, format: 'image/png', transparent: true, tiled: true, fillopacity: 0.1, CQL_FILTER: "dist_nm=" + "'" + v + "'" });
+                    sin.addTo(map)
+                    sin.bringToFront();
+                })
+            }        
+
+        </script>
+
+
+
+      </header>
+
+   
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            font-family: arial;
+
+        }
+		 #map {
+            position: absolute;
+            top: 10%;
+            left: 0%;
+            width: 100%;
+            height: 100%;
+            overflow: scroll;
+            border: 0.5px solid #4CAF50;
+        }
+
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+        }
+
+        .ol-popup:after,
+        .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+
+        .ol-popup-closer:after {
+            content: "X";
+        }
+    </style>
+
+
+    <title>pataa heatmap</title>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+	
+   <script type = "text/javascript" >
+
+    var map, geojson, layer_name, layerSwitcher, featureOverlay, highlightStyle, modify, draw_add, snap_edit, url, overlays, pop, state_name, feature, myFeature, content1, vectorLayer, getStyle1;
+var del_fts = new Array();
+var container = document.getElementById('popup');
+var content = document.getElementById('popup-content');
+var closer = document.getElementById('popup-closer');
+
+
+/**
+ * Create an overlay to anchor the popup to the map.
+ */
+var overlay = new ol.Overlay({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+        duration: 250
+    }
+});
+
+
+/**
+ * Add a click handler to hide the popup.
+ * @return {boolean} Don't follow the href.
+ */
+closer.onclick = function() {
+    overlay.setPosition(undefined);
+    closer.blur();
+    return false;
+};
+
+
+var view = new ol.View({
+    projection: 'EPSG:4326',
+    center: [78.0,25.0],
+    zoom: 5,
+
+});
+var view_ov = new ol.View({
+    projection: 'EPSG:4326',
+    center: [78.0,25.0],
+    zoom: 5,
+});
+
+
+var base_maps = new ol.layer.Group({
+    'title': 'Base maps',
+    layers: [
+        new ol.layer.Tile({
+            title: 'OSM',
+            type: 'base',
+            visible: true,
+            source: new ol.source.OSM()
+        }),
+
+        new ol.layer.Tile({
+            title: 'Satellite',
+            type: 'base',
+            visible: true,
+            source: new ol.source.XYZ({
+                attributions: ['Powered by Esri',
+                    'Source: Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community'
+                ],
+                attributionsCollapsible: false,
+                url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                maxZoom: 23
+            })
+        })
+    ]
+});
+
+var OSM = new ol.layer.Tile({
+    source: new ol.source.OSM(),
+    type: 'base',
+    title: 'OSM',
+});
+
+overlays = new ol.layer.Group({
+    'title': 'Overlays',
+    layers: [
+        new ol.layer.Image({
+            title: 'indore_locality_fg',
+            // extent: [-180, -90, -180, 90],
+            source: new ol.source.ImageWMS({
+                url: 'http://localhost:8082/geoserver/wms',
+                params: {
+                    'LAYERS': 'postgis_workspace:indore_locality_fg'
+                },
+                ratio: 1,
+                transparent: true, tiled: true,
+                serverType: 'geoserver'
+            })
+        })
+
+
+    ]
+});
+
+
+map = new ol.Map({
+    target: 'map',
+    view: view,
+    overlays: [overlay]
+});
+
+map.addLayer(base_maps);
+map.addLayer(overlays);
+
+var mouse_position = new ol.control.MousePosition();
+map.addControl(mouse_position);
+
+var overview = new ol.control.OverviewMap({
+    view: view_ov,
+    collapseLabel: 'O',
+    label: 'O',
+    layers: [OSM]
+});
+
+map.addControl(overview);
+
+var full_sc = new ol.control.FullScreen({
+    label: 'F'
+});
+map.addControl(full_sc);
+
+var zoom = new ol.control.Zoom({
+    zoomInLabel: '+',
+    zoomOutLabel: '-'
+});
+map.addControl(zoom);
+
+var slider = new ol.control.ZoomSlider();
+map.addControl(slider);
+
+
+var zoom_ex = new ol.control.ZoomToExtent({
+    extent: [
+        -149.81, 13.70,
+        -43.00, 63.00
+    ]
+});
+map.addControl(zoom_ex);
+
+var layerSwitcher = new ol.control.LayerSwitcher({
+    activationMode: 'click',
+    startActive: true,
+    tipLabel: 'Layers', // Optional label for button
+    groupSelectStyle: 'children', // Can be 'children' [default], 'group' or 'none'
+    collapseTipLabel: 'Collapse layers',
+});
+map.addControl(layerSwitcher);
+
+
+
+layerSwitcher.renderPanel();
+
+ var  vectorLayer =  new ol.layer.Vector({
+ title:'Covid_cases',
+  source: new ol.source.Vector({
+        url: 'india_covid_cases_point.geojson',
+        format: new ol.format.GeoJSON()
+    }),
+  style: function (feature, resolution) {
+        return getStyle1(feature, resolution);
+    }
+});
+
+
+	var max  = 2000000;
+	 var diff = max/7;
+	var col = 'rgba(255, 255, 0, 0.6)';
+var col1 = 'rgba(255, 0, 0, 0.6)';
+  var fill = new ol.style.Fill({color: col});
+  var stroke = new ol.style.Stroke({color: col1, width: 1});
+	
+		getStyle1 = function (feature, resolution) {
+		
+	var txt = new ol.style.Text({
+	text: "Cases:"+feature.get('29-05-2021'),
+	offsetX: 20,
+	offsetY: -15,
+    font: '12px Calibri,sans-serif',
+    fill: new ol.style.Fill({
+      color: '#000'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#fff',
+      width: 3
+    })
+  });
+
+// 		if (feature.get('29-05-2021') > max)  {
+     
+//        return new ol.style.Style({
+// 		 image: new ol.style.Circle({
+// 		  radius: 40,
+// 		  fill: fill,
+// 		  stroke: stroke
+// 		}),
+// 		text: txt
+            
+//         });
+//     }
+		
+// for (i = 0; i < 7; i++) {
+//  if (feature.get('29-05-2021') > (i*diff) && feature.get('29-05-2021') <= ((i+1)*diff) ) {
+     
+//        return new ol.style.Style({
+// 		 image: new ol.style.Circle({
+// 		  radius: 5*(i+1),
+// 		  fill: fill,
+// 		  stroke: stroke
+// 		}),
+// 		text: txt
+            
+//         });
+//     }
+	
+	 
+	
+// }
+
+//alert(i);
+
+
+
+
+};
+overlays.getLayers().push(vectorLayer);
+vectorLayer.getSource().on('addfeature', function() {
+    //alert(geojson.getSource().getExtent());
+    map.getView().fit(
+        vectorLayer.getSource().getExtent(), {
+            duration: 1590,
+            size: map.getSize()
+        }
+    );
+});
+
+highlightStyle = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(255,255,255,0.4)',
+    }),
+    stroke: new ol.style.Stroke({
+        color: '#3399CC',
+        width: 3,
+    }),
+    image: new ol.style.Circle({
+        radius: 10,
+        fill: new ol.style.Fill({
+            color: '#3399CC'
+        })
+    })
+});
+
+featureOverlay = new ol.layer.Vector({
+    title: 'high',
+    source: new ol.source.Vector(),
+    map: map,
+    style: highlightStyle
+});
+
+//overlays.getLayers().push(featureOverlay);
+
+//map.addLayer(featureOverlay);
+
+layerSwitcher.renderPanel();
+
+map.on('click', highlight);
+
+
+function highlight(evt) {
+    if (featureOverlay) {
+        featureOverlay.getSource().clear();
+        map.removeLayer(featureOverlay);
+    }
+    feature = map.forEachFeatureAtPixel(evt.pixel,
+        function(feature, layer) {
+            return feature;
+        });
+
+    if (feature) {
+
+        var geometry = feature.getGeometry();
+        var coord = geometry.getCoordinates();
+        var coordinate = evt.coordinate;
+        //alert(coord);
+        featureOverlay.getSource().addFeature(feature);
+        //overlays.getLayers().push(featureOverlay);
+
+        var content1 = '<h3>' + feature.get('STATE_NAME') + '</h3>';
+        content1 += '<h5>' + feature.get('29-05-2021') + '</h5>';
+
+        //  alert(feature.getId());
+        content.innerHTML = content1;
+        overlay.setPosition(coordinate);
+
+
+
+        layerSwitcher.renderPanel();
+
+        //alert(feature.get('gid'));
+
+        //  alert(feature.get('gid'));
+
+        map.updateSize();
+    }
+
+    // grid1.getSelectionModel().selectRow(grid1.getStore().find("id", feature.getId())); 
+
+}
+
+
+</script>
+
+
+</body> 
+</html>
